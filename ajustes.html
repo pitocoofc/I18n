@@ -23,40 +23,31 @@
     <script>
         // Estrutura modular de dicionários
         const dicionarioPT = {
-            "Settings": "Ajustes",
-            "Browser": "GhostNet",
-            "Files": "Arquivos",
-            "Calculator": "Calculadora",
-            "Ajustes": "Ajustes",
-            "GhostNet": "GhostNet",
-            "Arquivos": "Arquivos",
-            "Calculadora": "Calculadora"
-        };
+    "AJUSTES": "Ajustes",
+    "GHOSTNET": "GhostNet",
+    "ARQUIVOS": "Arquivos",
+    "CALCULADORA": "Calculadora"
+};
 
-        const dicionarioEN = {
-            "Ajustes": "Settings",
-            "GhostNet": "Browser",
-            "Arquivos": "Files",
-            "Calculadora": "Calculator"
-        };
+const dicionarioEN = {
+    "AJUSTES": "Settings",
+    "GHOSTNET": "Browser",
+    "ARQUIVOS": "Files",
+    "CALCULADORA": "Calculator"
+};
 
-        const dicionarioES = {
-            "Ajustes": "Ajustes",
-            "GhostNet": "Navegador",
-            "Arquivos": "Archivos",
-            "Calculadora": "Calculadora"
-        };
+function definirIdioma(dicionario) {
+    for (let id in dicionario) {
+        window.parent.postMessage({
+            type: 'RENAME_APP',
+            id: id,          // A Chave Mestra (ex: AJUSTES)
+            newName: dicionario[id] // O nome que vai aparecer (ex: Settings)
+        }, '*');
+    }
+}
 
-        // Função única que recebe o objeto de tradução escolhido
-        function definirIdioma(dicionario) {
-            for (let original in dicionario) {
-                window.parent.postMessage({
-                    type: 'RENAME_APP',
-                    originalName: original, // Chave fixa para o Kernel buscar
-                    newName: dicionario[original] // Valor novo para substituir
-                }, '*');
-            }
-        }
+
+        
     </script>
 </body>
 </html>
