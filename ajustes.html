@@ -7,49 +7,51 @@
         button { 
             display: block; width: 100%; padding: 15px; margin-bottom: 10px;
             background: #222; border: 1px solid #444; color: #fff; 
-            border-radius: 10px; cursor: pointer;
+            border-radius: 10px; cursor: pointer; transition: 0.3s;
         }
-        button:active { background: #333; }
+        button:hover { background: #333; }
     </style>
 </head>
 <body>
 
-    <h3>Configurações de Sistema</h3>
+    <h3>Configurações de Idioma</h3>
     
-    <button onclick="aplicarTraducao()">Aplicar Tradução (PT -> EN)</button>
-    
-    <button onclick="reverterTraducao()">Remover Tradução (Reset)</button>
+    <button onclick="definirIdioma(dicionarioPT)">Português (BR)</button>
+    <button onclick="definirIdioma(dicionarioEN)">English (US)</button>
+    <button onclick="definirIdioma(dicionarioES)">Español (ES)</button>
 
     <script>
-        // Mapeamento original -> novo
-        const dicionario = {
+        // Estrutura modular de dicionários
+        const dicionarioPT = {
+            "Ajustes": "Ajustes",
+            "GhostNet": "GhostNet",
+            "Arquivos": "Arquivos",
+            "Calculadora": "Calculadora"
+        };
+
+        const dicionarioEN = {
             "Ajustes": "Settings",
             "GhostNet": "Browser",
             "Arquivos": "Files",
             "Calculadora": "Calculator"
         };
 
-        const originalNames = ["Ajustes", "GhostNet", "Arquivos", "Calculadora"];
+        const dicionarioES = {
+            "Ajustes": "Ajustes",
+            "GhostNet": "Navegador",
+            "Arquivos": "Archivos",
+            "Calculadora": "Calculadora"
+        };
 
-        function aplicarTraducao() {
+        // Função única que recebe o objeto de tradução escolhido
+        function definirIdioma(dicionario) {
             for (let original in dicionario) {
                 window.parent.postMessage({
                     type: 'RENAME_APP',
-                    originalName: original,
-                    newName: dicionario[original]
+                    originalName: original, // Chave fixa para o Kernel buscar
+                    newName: dicionario[original] // Valor novo para substituir
                 }, '*');
             }
-        }
-
-        function reverterTraducao() {
-            originalNames.forEach(name => {
-                window.parent.postMessage({
-                    type: 'RENAME_APP',
-                    originalName: name, // O Kernel busca pelo nome que está na tela, 
-                                        // então aqui o truque é reverter para o original
-                    newName: name
-                }, '*');
-            });
         }
     </script>
 </body>
