@@ -211,9 +211,8 @@
             </div>  
             <span>Calendário</span>  
         </div>  
-        <div class="app-card" onclick="openApp('Tradutor', 'tradutor.html')">
-    <div class="app-icon-box">🗣️</div>
-    <span data-i18n="tradutor">Tradutor</span>
+        <div class="app-card" style="transition-delay: 0.1s;" onclick="openApp('Tradutor', 'tradutor.html')">  
+            <div class="app-icon-box">🗣️</div><span>Tradutor</span>  
         </div>  
         <div class="app-card" style="transition-delay: 0.1s;" onclick="openApp('Ajustes', 'ajustes.html')">  
             <div class="app-icon-box">⚙️</div><span>Ajustes</span>  
@@ -259,9 +258,6 @@
 </div>  
 
 <script>  
-    if (!localStorage.getItem("lang")) {
-    localStorage.setItem("lang", "pt"); // padrão
-    }
     // Variáveis Globais de Hardware  
     var driver_video = "off";  
     var driver_ndj = "off";  
@@ -722,44 +718,22 @@ if (event.data.type === 'IFRAME_LOADED' || hackAtivo) {
 }
 
 });
-    // --- LÓGICA DE I18N DINÂMICA ---
-async function loadLanguage() {
-    // Busca o idioma salvo ou assume 'pt'
-    const lang = localStorage.getItem("lang") || "pt";
-    
-    // Se for português, nada precisa ser feito
-    if (lang === "pt") return;
+    window.addEventListener('message', (event) => {
+    // ... seu código anterior de hack ...
 
-    try {
-        const response = await fetch(`lang/${lang}.json`);
-        if (!response.ok) throw new Error("Idioma não encontrado");
+    // NOVO: Alterador de nomes em tempo real
+    if (event.data.type === 'RENAME_APP') {
+        const { originalName, newName } = event.data;
+        const spans = document.querySelectorAll('.app-card span');
         
-        const translations = await response.json();
-        
-        // Procura todos os elementos que precisam de tradução
-        document.querySelectorAll('[data-i18n]').forEach(el => {
-            const key = el.getAttribute('data-i18n');
-            if (translations[key]) {
-                el.innerText = translations[key];
+        spans.forEach(span => {
+            if (span.innerText.toUpperCase() === originalName.toUpperCase()) {
+                span.innerText = newName;
             }
         });
-    } catch (e) {
-        console.warn("Idioma não encontrado ou pasta 'lang/' inacessível. Mantendo padrão (PT).");
+        console.log(`Kernel: App '${originalName}' renomeado para '${newName}'`);
     }
-}
-
-// Chame a função quando o DOM estiver pronto
-window.addEventListener('DOMContentLoaded', loadLanguage);
-    // Adicione isso no final do seu script principal
-// Toda vez que abrir uma janela (iframe), forçamos a tradução do app pai
-function openApp(name, url) {  
-    const win = document.getElementById('app-window');  
-    document.getElementById('win-title').innerText = name.toUpperCase();  
-    document.getElementById('win-frame').src = url;  
-    win.classList.add('open');  
-    toggleDrawer(false);
-    loadLanguage(); // <--- Adicionado para garantir
-}
+});
     
 
 </script>
