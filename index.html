@@ -259,6 +259,9 @@
 </div>  
 
 <script>  
+    if (!localStorage.getItem("lang")) {
+    localStorage.setItem("lang", "pt"); // padrão
+    }
     // Variáveis Globais de Hardware  
     var driver_video = "off";  
     var driver_ndj = "off";  
