@@ -750,6 +750,16 @@ async function loadLanguage() {
 
 // Chame a função quando o DOM estiver pronto
 window.addEventListener('DOMContentLoaded', loadLanguage);
+    // Adicione isso no final do seu script principal
+// Toda vez que abrir uma janela (iframe), forçamos a tradução do app pai
+function openApp(name, url) {  
+    const win = document.getElementById('app-window');  
+    document.getElementById('win-title').innerText = name.toUpperCase();  
+    document.getElementById('win-frame').src = url;  
+    win.classList.add('open');  
+    toggleDrawer(false);
+    loadLanguage(); // <--- Adicionado para garantir
+}
     
 
 </script>
