@@ -719,6 +719,35 @@ if (event.data.type === 'IFRAME_LOADED' || hackAtivo) {
 }
 
 });
+    // --- LÓGICA DE I18N DINÂMICA ---
+async function loadLanguage() {
+    // Busca o idioma salvo ou assume 'pt'
+    const lang = localStorage.getItem("lang") || "pt";
+    
+    // Se for português, nada precisa ser feito
+    if (lang === "pt") return;
+
+    try {
+        const response = await fetch(`lang/${lang}.json`);
+        if (!response.ok) throw new Error("Idioma não encontrado");
+        
+        const translations = await response.json();
+        
+        // Procura todos os elementos que precisam de tradução
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if (translations[key]) {
+                el.innerText = translations[key];
+            }
+        });
+    } catch (e) {
+        console.warn("Idioma não encontrado ou pasta 'lang/' inacessível. Mantendo padrão (PT).");
+    }
+}
+
+// Chame a função quando o DOM estiver pronto
+window.addEventListener('DOMContentLoaded', loadLanguage);
+    
 
 </script>
 
