@@ -719,21 +719,39 @@ if (event.data.type === 'IFRAME_LOADED' || hackAtivo) {
 
 });
     window.addEventListener('message', (event) => {
-    // ... seu código anterior de hack ...
-
-    // NOVO: Alterador de nomes em tempo real
     if (event.data.type === 'RENAME_APP') {
-        const { originalName, newName } = event.data;
+        const { id, newName } = event.data;
+        
+        // Mapeamento: ID_DO_SISTEMA -> O texto original que o span contém
+        // Isso ajuda o Kernel a encontrar o card certo, não importa o idioma
+        const identificadores = {
+            "AJUSTES": "Ajustes", "SETTINGS": "Settings",
+            "GHOSTNET": "GhostNet", "BROWSER": "Browser",
+            "ARQUIVOS": "Arquivos", "FILES": "Files",
+            "CALCULADORA": "Calculadora", "CALCULATOR": "Calculator"
+        };
+
         const spans = document.querySelectorAll('.app-card span');
         
         spans.forEach(span => {
-            if (span.innerText.toUpperCase() === originalName.toUpperCase()) {
+            const textoAtual = span.innerText.toUpperCase();
+            
+            // Se o texto atual do span for um dos nomes que conhecemos (em qualquer idioma)
+            // e ele pertencer ao mesmo "grupo" do ID que chegou...
+            if (identificadores[id.toUpperCase()] || textoAtual === identificadores[id.toUpperCase()]) {
+                // Aqui está o truque: Se o card atual é o que estamos procurando, renomeia
+                // Precisamos garantir que o card certo seja achado. 
+                // A forma mais fácil é você colocar data-id nos seus HTMLs:
+                // Ex: <div class="app-card" data-id="AJUSTES">
+                
+                // Mas, como não queremos mexer no HTML, vamos pelo texto:
+                // Se o texto do span é um dos nomes conhecidos desse ID, ele é o card.
                 span.innerText = newName;
             }
         });
-        console.log(`Kernel: App '${originalName}' renomeado para '${newName}'`);
     }
 });
+
     
 
 </script>
