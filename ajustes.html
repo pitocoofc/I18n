@@ -1,53 +1,187 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <style>
-        body { background: #111; color: #fff; font-family: sans-serif; padding: 20px; }
-        button { 
-            display: block; width: 100%; padding: 15px; margin-bottom: 10px;
-            background: #222; border: 1px solid #444; color: #fff; 
-            border-radius: 10px; cursor: pointer; transition: 0.3s;
-        }
-        button:hover { background: #333; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+    background: linear-gradient(135deg, #0f0f0f, #1a1a1a);
+    color: #fff;
+    font-family: 'Segoe UI', sans-serif;
+    padding: 20px;
+}
+
+/* Título */
+h2 {
+    margin-bottom: 20px;
+    font-weight: 500;
+}
+
+/* Container */
+.lang-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Botões */
+button {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #fff;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: 0.25s;
+    backdrop-filter: blur(10px);
+}
+
+button:hover {
+    background: rgba(255,255,255,0.1);
+    transform: scale(1.02);
+}
+
+/* Badge idioma */
+.lang-tag {
+    font-size: 12px;
+    opacity: 0.6;
+}
+</style>
 </head>
+
 <body>
 
-    <h3>Configurações de Idioma</h3>
-    
-    <button onclick="definirIdioma(dicionarioPT)">Português (BR)</button>
-    <button onclick="definirIdioma(dicionarioEN)">English (US)</button>
-    <button onclick="definirIdioma(dicionarioES)">Español (ES)</button>
+<h2>🌐 Idioma do Sistema</h2>
 
-    <script>
-        // Estrutura modular de dicionários
-        const dicionarioPT = {
-    "AJUSTES": "Ajustes",
-    "GHOSTNET": "GhostNet",
-    "ARQUIVOS": "Arquivos",
-    "CALCULADORA": "Calculadora"
+<div class="lang-container">
+
+<button onclick="setLang('pt')">
+    🇧🇷 Português (BR)
+    <span class="lang-tag">PT-BR</span>
+</button>
+
+<button onclick="setLang('en')">
+    🇺🇸 English
+    <span class="lang-tag">EN-US</span>
+</button>
+
+<button onclick="setLang('es')">
+    🇪🇸 Español
+    <span class="lang-tag">ES</span>
+</button>
+
+<button onclick="setLang('fr')">
+    🇫🇷 Français
+    <span class="lang-tag">FR</span>
+</button>
+
+<button onclick="setLang('de')">
+    🇩🇪 Deutsch
+    <span class="lang-tag">DE</span>
+</button>
+
+<button onclick="setLang('jp')">
+    🇯🇵 日本語
+    <span class="lang-tag">JP</span>
+</button>
+
+</div>
+
+<script>
+
+/* 🌍 DICIONÁRIO GLOBAL (ESCALÁVEL) */
+const LANGS = {
+
+pt: {
+    AJUSTES: "Ajustes",
+    GHOSTNET: "GhostNet",
+    ARQUIVOS: "Arquivos",
+    CALCULADORA: "Calculadora",
+    TRADUTOR: "Tradutor",
+    GALERIA: "Galeria",
+    BUSSOLA: "Bússola",
+    RELOGIO: "Relógio"
+},
+
+en: {
+    AJUSTES: "Settings",
+    GHOSTNET: "Browser",
+    ARQUIVOS: "Files",
+    CALCULADORA: "Calculator",
+    TRADUTOR: "Translator",
+    GALERIA: "Gallery",
+    BUSSOLA: "Compass",
+    RELOGIO: "Clock"
+},
+
+es: {
+    AJUSTES: "Ajustes",
+    GHOSTNET: "Navegador",
+    ARQUIVOS: "Archivos",
+    CALCULADORA: "Calculadora",
+    TRADUTOR: "Traductor",
+    GALERIA: "Galería",
+    BUSSOLA: "Brújula",
+    RELOGIO: "Reloj"
+},
+
+fr: {
+    AJUSTES: "Paramètres",
+    GHOSTNET: "Navigateur",
+    ARQUIVOS: "Fichiers",
+    CALCULADORA: "Calculatrice",
+    TRADUTOR: "Traducteur",
+    GALERIA: "Galerie",
+    BUSSOLA: "Boussole",
+    RELOGIO: "Horloge"
+},
+
+de: {
+    AJUSTES: "Einstellungen",
+    GHOSTNET: "Browser",
+    ARQUIVOS: "Dateien",
+    CALCULADORA: "Rechner",
+    TRADUTOR: "Übersetzer",
+    GALERIA: "Galerie",
+    BUSSOLA: "Kompass",
+    RELOGIO: "Uhr"
+},
+
+jp: {
+    AJUSTES: "設定",
+    GHOSTNET: "ブラウザ",
+    ARQUIVOS: "ファイル",
+    CALCULADORA: "電卓",
+    TRADUTOR: "翻訳",
+    GALERIA: "ギャラリー",
+    BUSSOLA: "コンパス",
+    RELOGIO: "時計"
+}
+
 };
 
-const dicionarioEN = {
-    "AJUSTES": "Settings",
-    "GHOSTNET": "Browser",
-    "ARQUIVOS": "Files",
-    "CALCULADORA": "Calculator"
-};
+/* 🚀 FUNÇÃO PRINCIPAL */
+function setLang(lang) {
 
-function definirIdioma(dicionario) {
-    for (let id in dicionario) {
+    const dict = LANGS[lang];
+
+    // salva idioma (pra usar no sistema inteiro)
+    localStorage.setItem("ghost_lang", lang);
+
+    for (let id in dict) {
         window.parent.postMessage({
             type: 'RENAME_APP',
-            id: id,          // A Chave Mestra (ex: AJUSTES)
-            newName: dicionario[id] // O nome que vai aparecer (ex: Settings)
+            id: id,
+            newName: dict[id]
         }, '*');
     }
 }
 
+</script>
 
-        
-    </script>
 </body>
 </html>
