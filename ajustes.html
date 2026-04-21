@@ -1,187 +1,272 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <script src="sys_config.js"></script>
+    <style>
+        body {
+            margin: 0; padding: 20px;
+            background: #111; color: #fff;
+            font-family: 'Segoe UI', sans-serif;
+            user-select: none;
+        }
+        h2 { border-bottom: 1px solid #333; padding-bottom: 10px; font-weight: 300; margin-top: 0; }
+        
+        .section { margin-bottom: 30px; }
+        .label { font-size: 11px; color: #3b82f6; text-transform: uppercase; margin-bottom: 10px; display: block; letter-spacing: 1px;}
 
-<style>
-body {
-    background: linear-gradient(135deg, #0f0f0f, #1a1a1a);
-    color: #fff;
-    font-family: 'Segoe UI', sans-serif;
-    padding: 20px;
-}
+        /* Grid de Wallpapers */
+        .wp-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        .wp-item {
+            aspect-ratio: 16/9; background-size: cover; background-position: center;
+            border-radius: 8px; border: 2px solid transparent; cursor: pointer;
+            transition: 0.2s;
+        }
+        .wp-item:active { transform: scale(0.95); border-color: #3b82f6; }
 
-/* Título */
-h2 {
-    margin-bottom: 20px;
-    font-weight: 500;
-}
+        /* Info do Dispositivo & Armazenamento */
+        .info-card { background: #222; padding: 15px; border-radius: 12px; border: 1px solid #333; font-size: 14px; }
+        .info-line { display: flex; justify-content: space-between; margin-bottom: 5px; }
+        .info-value { color: #3b82f6; font-family: monospace; }
+        
+        .ram-virtual { font-size: 10px; vertical-align: super; color: #a855f7; margin-left: 2px; }
 
-/* Container */
-.lang-container {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
+        .storage-container { margin-top: 15px; }
+        .storage-bar { 
+            height: 12px; width: 100%; background: #444; border-radius: 6px; 
+            display: flex; overflow: hidden; margin-bottom: 8px;
+        }
+        .bar-os { background: #eab308; } 
+        .bar-apps { background: #a855f7; }   
+        .bar-files { background: #3b82f6; }  
+        
+        .storage-legend { display: flex; gap: 10px; font-size: 10px; color: #888; flex-wrap: wrap; }
+        .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 4px; }
 
-/* Botões */
-button {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 15px;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
-    color: #fff;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: 0.25s;
-    backdrop-filter: blur(10px);
-}
+        /* Estilo dos Drivers */
+        .btn-group { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
+        .driver-btn {
+            flex: 1; min-width: 120px; padding: 12px; background: #222; border: 1px solid #444;
+            color: #fff; border-radius: 8px; cursor: pointer; font-size: 13px;
+            transition: 0.3s;
+        }
+        .driver-btn:hover { background: #333; }
+        .driver-btn.primary { background: #3b82f6; border-color: #2563eb; }
+        .driver-btn.warning { border-color: #eab308; color: #eab308; font-weight: bold; }
+        .driver-btn.active-kernel { border: 1px solid #fff; background: #333; box-shadow: 0 0 10px rgba(59, 130, 246, 0.2); }
 
-button:hover {
-    background: rgba(255,255,255,0.1);
-    transform: scale(1.02);
-}
+        #progress-container {
+            display: none; width: 100%; height: 8px; background: #222; 
+            border-radius: 4px; margin-top: 15px; overflow: hidden;
+        }
+        #progress-bar { width: 0%; height: 100%; background: #3b82f6; transition: width 0.1s; }
 
-/* Badge idioma */
-.lang-tag {
-    font-size: 12px;
-    opacity: 0.6;
-}
-</style>
+        /* MODAL DE IMAGEM */
+        #img-viewer {
+            position: fixed; inset: 0; background: #000; z-index: 9999;
+            display: none; align-items: center; justify-content: center;
+        }
+        #img-viewer img {
+            max-width: 90%; max-height: 80%; border-radius: 4px;
+            animation: pulse-img 3s infinite ease-in-out;
+        }
+        @keyframes pulse-img {
+            0%, 100% { transform: scale(1); filter: brightness(1); }
+            50% { transform: scale(1.04); filter: brightness(1.2); }
+        }
+    </style>
 </head>
-
 <body>
 
-<h2>🌐 Idioma do Sistema</h2>
+    <div id="img-viewer" onclick="this.style.display='none'">
+        <img src="87 Sem Título_20260323192002.png">
+    </div>
 
-<div class="lang-container">
+    <div class="section">
+        <span class="label">Sobre o Dispositivo</span>
+        <h2>Especificações</h2>
+        <div class="info-card">
+            <div class="info-line"><span>Processador:</span> <span class="info-value" id="cpu-name">---</span></div>
+            <div class="info-line"><span>Memória RAM:</span> <span><span id="ram-base">0</span>GB<span class="ram-virtual" id="ram-v">+0</span></span></div>
+            
+            <div class="storage-container">
+                <div class="info-line"><span>Armazenamento:</span> <span><span id="storage-used">0</span>GB / <span id="storage-total">0</span>GB</span></div>
+                <div class="storage-bar">
+                    <div class="bar-os" id="bar-os-w"></div>
+                    <div class="bar-apps" id="bar-apps-w"></div>
+                    <div class="bar-files" id="bar-files-w"></div>
+                </div>
+                <div class="storage-legend">
+                    <span><i class="dot" style="background:#eab308"></i>OS (<span id="txt-os">0</span>GB)</span>
+                    <span><i class="dot" style="background:#a855f7"></i>Apps (<span id="txt-apps">0</span>MB)</span>
+                    <span><i class="dot" style="background:#3b82f6"></i>Arquivos (135MB)</span>
+                </div>
+            </div>
+        </div>
+    </div>
 
-<button onclick="setLang('pt')">
-    🇧🇷 Português (BR)
-    <span class="lang-tag">PT-BR 100%</span>
-</button>
+    <div class="section">
+        <span class="label">Personalização</span>
+        <h2>Papel de Parede</h2>
+        <div class="wp-grid">
+            <div class="wp-item" style="background-image: url('https://www.opovo.com.br/_midias/jpg/2026/02/09/800x600/1_fase_lua_minguante_11_fevereiro_2026-39299104.jpg');" 
+                 onclick="changeWP('https://www.opovo.com.br/_midias/jpg/2026/02/09/800x600/1_fase_lua_minguante_11_fevereiro_2026-39299104.jpg')"></div>
+            
+            <div class="wp-item" style="background-image: url('https://w.wallhaven.cc/full/j3/wallhaven-j3m8p6.png');" 
+                 onclick="changeWP('https://w.wallhaven.cc/full/j3/wallhaven-j3m8p6.png')"></div>
+            
+            <div class="wp-item" style="background-image: url('https://w.wallhaven.cc/full/ox/wallhaven-oxv699.jpg');" 
+                 onclick="changeWP('https://w.wallhaven.cc/full/ox/wallhaven-oxv699.jpg')"></div>
+            
+            <div class="wp-item" style="background-image: url('https://w.wallhaven.cc/full/gp/wallhaven-gpl9ve.jpg');" 
+                 onclick="changeWP('https://w.wallhaven.cc/full/gp/wallhaven-gpl9ve.jpg')"></div>
 
-<button onclick="setLang('en')">
-    🇺🇸 English
-    <span class="lang-tag">EN-US 100%</span>
-</button>
-
-<button onclick="setLang('es')">
-    🇪🇸 Español
-    <span class="lang-tag">ES 82%</span>
-</button>
-
-<button onclick="setLang('fr')">
-    🇫🇷 Français
-    <span class="lang-tag">FR 84%</span>
-</button>
-
-<button onclick="setLang('de')">
-    🇩🇪 Deutsch
-    <span class="lang-tag">DE 54%</span>
-</button>
-
-<button onclick="setLang('jp')">
-    🇯🇵 日本語
-    <span class="lang-tag">JP 35%</span>
-</button>
-
+<div class="wp-item" onclick="document.getElementById('fileInput').click()" style="display:flex;align-items:center;justify-content:center;background:#222;font-size:24px;">
+    +
 </div>
+<input id="fileInput" type="file" accept="image/*" onchange="uploadWallpaper(event)" hidden>
 
-<script>
+        </div>
+    </div>
 
-/* 🌍 DICIONÁRIO GLOBAL (ESCALÁVEL) */
-const LANGS = {
+    <div class="section">
+        <span class="label">Hardware & Subsistema</span>
+        <h2>Drivers de Dispositivo</h2>
+        <div class="info-card">
+            <div class="info-line"><span>Driver de Vídeo:</span> <span id="v-status">OFF</span></div>
+            <div class="info-line"><span>Driver de Rede (Ndj):</span> <span id="n-status">OFF</span></div>
+        </div>
+        
+        <div id="progress-container"><div id="progress-bar"></div></div>
 
-pt: {
-    AJUSTES: "Ajustes",
-    GHOSTNET: "GhostNet",
-    ARQUIVOS: "Arquivos",
-    CALCULADORA: "Calculadora",
-    TRADUTOR: "Tradutor",
-    GALERIA: "Galeria",
-    BUSSOLA: "Bússola",
-    RELOGIO: "Relógio"
-},
+        <div class="btn-group">
+            <button class="driver-btn" onclick="installDrivers('essentials')">Essenciais</button>
+            <button class="driver-btn primary" onclick="installDrivers('full')">Baixar Todos</button>
+            <button class="driver-btn warning" onclick="wtd()">Overclock</button>
+        </div>
+    </div>
 
-en: {
-    AJUSTES: "Settings",
-    GHOSTNET: "Browser",
-    ARQUIVOS: "Files",
-    CALCULADORA: "Calculator",
-    TRADUTOR: "Translator",
-    GALERIA: "Gallery",
-    BUSSOLA: "Compass",
-    RELOGIO: "Clock"
-},
+    <div class="section">
+        <span class="label">Configurações de Boot</span>
+        <h2>Trocar de Sistema (Kernel)</h2>
+        <div class="btn-group">
+            <button id="btn-future" class="driver-btn" onclick="setKernel('os.html')">GhostOS Future</button>
+            <button id="btn-nexo" class="driver-btn" onclick="setKernel('os2.html')">BIOS</button>
+        </div>
+    </div>
 
-es: {
-    AJUSTES: "Ajustes",
-    GHOSTNET: "Navegador",
-    ARQUIVOS: "Archivos",
-    CALCULADORA: "Calculadora",
-    TRADUTOR: "Traductor",
-    GALERIA: "Galería",
-    BUSSOLA: "Brújula",
-    RELOGIO: "Reloj"
-},
+    <div class="section">
+        <span class="label">Sistema</span>
+        <div class="info-card">
+            <div class="info-line"><span>Versão:</span> <span>5.0.0</span></div>
+            <div class="info-line"><span>Desenvolvedor:</span> <span>Ghost</span></div>
+            <div class="info-line"><span>Repositório:</span> <span>Ndj-lib</span></div>
+            <div style="margin-top: 15px; border-top: 1px solid #333; padding-top: 10px;">
+                <span onclick="document.getElementById('img-viewer').style.display='flex'" style="color: #3b82f6; cursor: pointer; font-size: 13px;">[ VER ARQUIVO DE REGISTRO ]</span>
+            </div>
+        </div>
+    </div>
 
-fr: {
-    AJUSTES: "Paramètres",
-    GHOSTNET: "Navigateur",
-    ARQUIVOS: "Fichiers",
-    CALCULADORA: "Calculatrice",
-    TRADUTOR: "Traducteur",
-    GALERIA: "Galerie",
-    BUSSOLA: "Boussole",
-    RELOGIO: "Horloge"
-},
+    <script>
+        function applyConfig() {
+            if (typeof GHOST_SYS !== 'undefined') {
+                const s = GHOST_SYS;
+                const fileW = 0.135;
+                document.getElementById('cpu-name').innerText = s.cpu;
+                document.getElementById('ram-base').innerText = s.ram;
+                document.getElementById('ram-v').innerText = "+" + s.ram_virtual;
+                document.getElementById('storage-total').innerText = s.storage_total;
+                document.getElementById('txt-os').innerText = s.os_weight;
+                document.getElementById('txt-apps').innerText = s.apps_weight * 1000;
+                const totalUsed = (s.os_weight + s.apps_weight + fileW).toFixed(1);
+                document.getElementById('storage-used').innerText = totalUsed;
+                document.getElementById('bar-os-w').style.width = (s.os_weight / s.storage_total * 100) + "%";
+                document.getElementById('bar-apps-w').style.width = (s.apps_weight / s.storage_total * 100) + "%";
+                document.getElementById('bar-files-w').style.width = (fileW / s.storage_total * 100) + "%";
+            }
+            updateKernelUI();
+        }
 
-de: {
-    AJUSTES: "Einstellungen",
-    GHOSTNET: "Browser",
-    ARQUIVOS: "Dateien",
-    CALCULADORA: "Rechner",
-    TRADUTOR: "Übersetzer",
-    GALERIA: "Galerie",
-    BUSSOLA: "Kompass",
-    RELOGIO: "Uhr"
-},
+        window.onload = applyConfig;
 
-jp: {
-    AJUSTES: "設定",
-    GHOSTNET: "ブラウザ",
-    ARQUIVOS: "ファイル",
-    CALCULADORA: "電卓",
-    TRADUTOR: "翻訳",
-    GALERIA: "ギャラリー",
-    BUSSOLA: "コンパス",
-    RELOGIO: "時計"
+        function setKernel(file) {
+            localStorage.setItem("selected_os", file);
+            updateKernelUI();
+            if(confirm("Abrir o BIOS ou ativar o OS principal?")) {
+                window.top.location.href = "login.html";
+            }
+        }
+
+        function updateKernelUI() {
+            const current = localStorage.getItem("selected_os") || "os.html";
+            document.getElementById('btn-future').classList.toggle('active-kernel', current === "os.html");
+            document.getElementById('btn-nexo').classList.toggle('active-kernel', current === "os2.html");
+        }
+
+        function changeWP(url) {
+            window.parent.postMessage({ type: 'SET_WALLPAPER', url: url }, '*');
+        }
+
+        function installDrivers(mode) {
+            const container = document.getElementById('progress-container');
+            const bar = document.getElementById('progress-bar');
+            container.style.display = 'block';
+            let width = 0;
+            const interval = setInterval(() => {
+                if (width >= 100) {
+                    clearInterval(interval);
+                    completeInstallation(mode);
+                } else {
+                    width += Math.random() * 15;
+                    if(width > 100) width = 100;
+                    bar.style.width = width + '%';
+                }
+            }, 200);
+        }
+
+        function completeInstallation(mode) {
+            if (mode === 'essentials') {
+                parent.driver_video = "on";
+                document.getElementById('v-status').innerText = "ON";
+                document.getElementById('v-status').style.color = "#4ade80";
+            } else {
+                parent.driver_video = "on";
+                parent.driver_ndj = "on";
+                document.getElementById('v-status').innerText = "ON";
+                document.getElementById('n-status').innerText = "ON";
+                document.getElementById('v-status').style.color = "#4ade80";
+                document.getElementById('n-status').style.color = "#4ade80";
+            }
+            alert("Sincronização com Kernel concluída!");
+            document.getElementById('progress-container').style.display = 'none';
+        }
+
+        function wtd() {
+            window.location.href = "overclock.html";
+        }
+function uploadWallpaper(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+        const base64 = e.target.result;
+
+        // salva no sistema
+        localStorage.setItem("custom_wallpaper", base64);
+
+        // aplica imediatamente
+        changeWP(base64);
+    };
+
+    reader.readAsDataURL(file);
 }
 
-};
-
-/* 🚀 FUNÇÃO PRINCIPAL */
-function setLang(lang) {
-
-    const dict = LANGS[lang];
-
-    // salva idioma (pra usar no sistema inteiro)
-    localStorage.setItem("ghost_lang", lang);
-
-    for (let id in dict) {
-        window.parent.postMessage({
-            type: 'RENAME_APP',
-            id: id,
-            newName: dict[id]
-        }, '*');
-    }
+const savedWP = localStorage.getItem("custom_wallpaper");
+if (savedWP) {
+    changeWP(savedWP);
 }
-
-</script>
-
+    </script>
 </body>
 </html>
