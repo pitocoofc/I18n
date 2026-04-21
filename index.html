@@ -254,7 +254,7 @@
     <div class="app-card" data-id="ARQUIVOS" onclick="openApp('Arquivos', 'files.html')">
     <div class="app-icon-box">📂</div><span>Arquivos</span>
         </div> 
-
+</div>
     <div id="app-window" class="window">  
         <div class="win-header">  
             <span id="win-title" style="font-size: 12px; font-weight: bold; letter-spacing: 1px;">APP</span>  
@@ -305,6 +305,7 @@
         { name: 'Animes', icon: '🗨️', url: 'animes.html' },  
         { name: 'debug', icon: '🔐', url: 'debug.html' },  
         { name: 'Extras', icon: '📁', url: 'extra.html'},  
+        { name: 'Configurar', icon: '⚙️', url: 'config.html'},
         { name: 'Programação', icon: '🖥️', url: 'programacao.html'}  
     ];  
 
@@ -686,6 +687,7 @@ setInterval(updateClock, 1000); updateClock();
             const url = event.data.url;  
             document.getElementById('main-desktop').style.backgroundImage = `url('${url}')`;  
             document.getElementById('lock-screen').style.backgroundImage = `url('${url}')`;  
+localStorage.setItem("ghost_wallpaper", url);
         }  
     });  
 
@@ -734,7 +736,7 @@ if (event.data.type === 'IFRAME_LOADED' || hackAtivo) {
 
 });
     window.addEventListener('message', (event) => {
-    if (event.data.type === 'RENAME_APP') {
+    if (event.data.type === 'rename_app') {
         const { id, newName } = event.data;
         
         // Ele vai procurar apenas o card que tenha o ID exato
@@ -746,10 +748,32 @@ if (event.data.type === 'IFRAME_LOADED' || hackAtivo) {
                 span.innerText = newName;
             }
         }
+let apps = JSON.parse(localStorage.getItem("ghost_apps")) || {};
+    apps[id] = newName;
+    localStorage.setItem("ghost_apps", JSON.stringify(apps));
     }
 });
 
-    
+    const savedWP = localStorage.getItem("ghost_wallpaper");
+if (savedWP) {
+    document.getElementById('main-desktop').style.backgroundImage = `url('${savedWP}')`;
+    document.getElementById('lock-screen').style.backgroundImage = `url('${savedWP}')`;
+}
+function loadAppNames() {
+    const apps = JSON.parse(localStorage.getItem("ghost_apps")) || {};
+
+    Object.keys(apps).forEach(id => {
+        const card = document.querySelector(`.app-card[data-id="${id}"]`);
+        if (card) {
+            const span = card.querySelector('span');
+            if (span) {
+                span.innerText = apps[id];
+            }
+        }
+    });
+}
+
+loadAppNames();
 
 </script>
 
