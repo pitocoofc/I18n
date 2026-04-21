@@ -634,6 +634,21 @@ setInterval(updateClock, 1000); updateClock();
         }, 300);  
     }  
 
+    const savedColor = localStorage.getItem('clock_color');
+if(savedColor){
+    document.getElementById('clock').style.color = savedColor;
+}
+
+const savedFont = localStorage.getItem('clock_font');
+if(savedFont){
+    document.getElementById('clock').style.fontFamily = savedFont;
+}
+
+const savedToggle = localStorage.getItem('clock_toggle');
+if(savedToggle === 'false'){
+    document.getElementById('clock').style.display = 'none';
+    }
+    
     function openApp(name, url) {  
         const win = document.getElementById('app-window');  
         document.getElementById('win-title').innerText = name.toUpperCase();  
@@ -773,6 +788,24 @@ function loadAppNames() {
     });
 }
 
+    window.addEventListener('message', (event) => {
+
+    if(event.data.type === 'clock_color'){
+        document.getElementById('clock').style.color = event.data.value;
+        localStorage.setItem('clock_color', event.data.value);
+    }
+
+    if(event.data.type === 'clock_font'){
+        document.getElementById('clock').style.fontFamily = event.data.value;
+        localStorage.setItem('clock_font', event.data.value);
+    }
+
+    if(event.data.type === 'clock_toggle'){
+        document.getElementById('clock').style.display = event.data.value ? 'block' : 'none';
+        localStorage.setItem('clock_toggle', event.data.value);
+    }
+
+});
 loadAppNames();
 
 </script>
